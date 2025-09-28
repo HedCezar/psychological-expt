@@ -1,10 +1,10 @@
 import {
-	font,
-	nickname,
-	PsyExpBaseConfig,
-	fetchMessages,
-	updateDatabase,
-	getHighscores,
+    font,
+    nickname,
+    PsyExpBaseConfig,
+    fetchMessages,
+    updateDatabase,
+    getHighscores,
 } from '../../psyexp_core.js';
 
 const required = [Phaser];
@@ -21,7 +21,6 @@ class InstructionsScene extends Phaser.Scene {
 
 	preload() {
 		this.load.image('background', root + '/assets/fields.jpg');
-
 		this.load.image('explosion-yelloww', root + '/assets/explosion-yelloww.png');
 	}
 
@@ -40,16 +39,16 @@ class InstructionsScene extends Phaser.Scene {
 		};
 
 		const text = this.add.text(
-			this.cameras.main.centerX,
-			this.cameras.main.centerY,
-			instructionsText,
-			instructionsTextStyle
-		).setOrigin(0.5);
+            this.cameras.main.centerX,
+            this.cameras.main.centerY,
+            instructionsText,
+            instructionsTextStyle
+        ).setOrigin(0.5);
 
 		this.input.keyboard.on('keydown-ENTER', () => {
 			this.scene.start('GameScene');
 		});
-
+    
 		this.input.keyboard.on('keydown-SPACE', () => {
 			this.scene.start('GameScene');
 		});
@@ -109,46 +108,37 @@ class GameScene extends Phaser.Scene {
 
 		balloonCounterText = this.add.text(20, H * 0.2, '', font.larger);
 
+		const sliderX = 50;
+		const sliderY = H / 2 - 100;
+		const sliderHeight = 200;
 
-		// Slider vertical para velocidade (parte medial esquerda)
-   const sliderX = 50;             // próximo da borda esquerda
-   const sliderY = H / 2 - 100;    // centralizado verticalmente
-   const sliderHeight = 200;
+		const sliderBg = this.add.graphics();
+		sliderBg.fillStyle(0x666666, 1);
+		sliderBg.fillRect(sliderX, sliderY, 10, sliderHeight);
 
-   // Fundo do slider (linha de fundo)
-   const sliderBg = this.add.graphics();
-   sliderBg.fillStyle(0x666666, 1);
-   sliderBg.fillRect(sliderX, sliderY, 10, sliderHeight);
+		rateSlider = this.add.rectangle(
+			sliderX + 5,
+			sliderY + sliderHeight * (1 - (balloonPumpRate - 0.00001) / (0.0003 - 0.00001)),
+			20,
+			10,
+			0xffffff
+		).setOrigin(0.5).setInteractive({ draggable: true });
 
-    // Handle (alvo que o jogador arrasta)
-    rateSlider = this.add.rectangle(
-	sliderX + 5,
-	sliderY + sliderHeight * (1 - (balloonPumpRate - 0.00001) / (0.0003 - 0.00001)),
-	20,
-	10,
-	0xffffff
-    ).setOrigin(0.5).setInteractive({ draggable: true });
+		this.input.setDraggable(rateSlider);
 
-    
+		this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+			if (gameObject === rateSlider) {
+				const minY = sliderY;
+				const maxY = sliderY + sliderHeight;
+				const clampedY = Phaser.Math.Clamp(dragY, minY, maxY);
+				gameObject.y = clampedY;
 
-    // Ativa o arraste
-    this.input.setDraggable(rateSlider);
+				const t = 1 - ((clampedY - minY) / sliderHeight);
+				balloonPumpRate = Phaser.Math.Linear(0.0001, 0.0003, t);
 
-    this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-	if (gameObject === rateSlider) {
-		const minY = sliderY;
-		const maxY = sliderY + sliderHeight;
-		const clampedY = Phaser.Math.Clamp(dragY, minY, maxY);
-		gameObject.y = clampedY;
-
-		// Converte a posição Y para a faixa de valores (quanto mais alto, mais rápido)
-		const t = 1 - ((clampedY - minY) / sliderHeight);
-		balloonPumpRate = Phaser.Math.Linear(0.0001, 0.0003, t);
-
-		// Atualiza o texto
-		rateSliderText.setText(`Velocidade:\n${balloonPumpRate.toFixed(5)}`);
-	}
-    });
+				rateSliderText.setText(`Velocidade:\n${balloonPumpRate.toFixed(5)}`);
+			}
+		});
 
 		this.input.keyboard.on('keydown-SPACE', enablePumping, this);
 		this.input.keyboard.on('keyup-SPACE', disablePumping, this);
@@ -218,8 +208,7 @@ let inflateSound;
 let gameOver = false;
 let pumpCount = 0;
 
-let balloonPumpRate = 0.00005; // valor inicial da velocidade
-
+let balloonPumpRate = 0.00005;
 let rateSlider;
 let rateSliderText;
 
@@ -244,8 +233,7 @@ function initializeBalloonSchedule() {
 	let schedule = Array(10).fill(0).concat(Array(10).fill(1)).concat(Array(10).fill(2));
 	shuffleArray(schedule);
 	schedule = schedule.concat(Array(20).fill(0)).concat(Array(20).fill(1)).concat(Array(20).fill(2));
-
-	balloonSchedule = schedule.slice(0, 30); // ou 60, se quiser mais balões
+	balloonSchedule = schedule.slice(0, 30);
 }
 
 function createPumpButton() {
@@ -279,7 +267,7 @@ function disablePumping() {
 	pumping = false;
 }
 
-function setCurrentScore(score) { }
+function setCurrentScore(score) {}
 
 function setLastBalloonScore(score) {
 	lastBalloonScoreText.setText(messageMap['LAST_BALLOON_SCORE'].replace('XXX', score.toFixed(2)));
@@ -290,8 +278,6 @@ function setTotalScore(score) {
 }
 
 function protoPumpBalloon(msElapsed) {
-
-	// Usa a velocidade do slider para qualquer balão
 	balloonSize += balloonPumpRate * msElapsed;
 	balloon.setScale(balloonSize);
 
@@ -335,25 +321,6 @@ function popBalloon() {
 		explosion.destroy();
 		resetBalloon();
 	});
-
-<<<<<<< HEAD
-    const scale = balloon.scaleX;
-    explosion.setScale(scale * 0.5);
-
-    balloonScores.push(0);
-    balloonExplosions.push(currentScore);
-    updateSessionRecord();
-
-    disablePumping();
-    setLastBalloonScore(0);
-    currentScore = 0;
-
-    scene.time.delayedCall(600, () => {
-        explosion.destroy();
-        resetBalloon();
-    });
-=======
->>>>>>> origin/b1
 }
 
 function updateSessionRecord() {
@@ -388,24 +355,19 @@ function resetBalloon() {
 
 	disablePumping();
 
-	// Verifica se acabou a sequência de balões
 	if (currentBalloonIndex >= balloonSchedule.length) {
 		setGameOver();
 		return;
 	}
 
-	// Reset do estado do balão
 	balloonSize = gameConstants.balloonInitialSize;
 	pumpCount = 0;
 	currentScore = 0;
-
 	setCurrentScore(currentScore);
 
-	// Define a cor e durabilidade do próximo balão
 	currentColorIndex = balloonSchedule[currentBalloonIndex];
 	balloonDurabilityState = Array.from(Array(balloonDurabilities[currentColorIndex]).keys());
 
-	// Atualiza o balão na tela
 	balloon.setOrigin(0.5, 1.0);
 	balloon.setScale(balloonSize);
 	balloon.setTint(balloonColors[currentColorIndex]);
@@ -439,7 +401,7 @@ function displayHighscores(scores) {
 		scene.add.text(W * 0.64, y + 40 * i, messageMap["TOTAL_SCORE"].replace('XXX', score.experiment_payload.totalScore.toFixed(2)), font.normal);
 	});
 }
-  
+
 function getRandomItem(arr) {
 	const randomIndex = Math.floor(Math.random() * arr.length);
 	const item = arr[randomIndex];
